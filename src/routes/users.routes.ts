@@ -17,7 +17,7 @@ usersRouter.post('/', (request, response) => {
     return response.status(400).json({ message: 'The passwords do not match' });
   }
 
-  const user = usersRepository.create(email, password);
+  const user = usersRepository.create({ email, password });
 
   return response.json(user);
 });

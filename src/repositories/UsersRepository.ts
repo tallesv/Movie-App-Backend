@@ -1,5 +1,9 @@
 import User from '../models/User';
 
+interface CreateUserDTO {
+  email: string;
+  password: string;
+}
 class UsersRepository {
   private users: User[];
 
@@ -17,8 +21,8 @@ class UsersRepository {
     return findUserWithSameEmail || null;
   }
 
-  public create(email: string, password: string): User {
-    const user = new User(email, password);
+  public create({ email, password }: CreateUserDTO): User {
+    const user = new User({ email, password });
 
     this.users.push(user);
 
