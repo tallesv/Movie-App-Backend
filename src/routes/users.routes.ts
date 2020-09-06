@@ -1,25 +1,22 @@
 import { Router } from 'express';
 import UsersRepository from '../repositories/UsersRepository';
+import CreateUserService from '../services/CreateUserService';
 
 const usersRouter = Router();
 const usersRepository = new UsersRepository();
 
 usersRouter.post('/', (request, response) => {
-  const { email, password, passwordConfirmation } = request.body;
+  try {
+    const { email, password, passwordConfirmation } = request.body;
 
-  const findUserWithSameEmail = usersRepository.findByEmail(email);
+    const createUser = new CreateUserService(usersRepository);
 
-  if (findUserWithSameEmail) {
-    return response.status(400).json({ message: 'Email already used' });
+    const user = createUser.execute({ email, password, passwordConfirmation });
+
+    return response.json(user);
+  } catch (err) {
+    return response.status(400).json({ error: err.message });
   }
-
-  if (password !== passwordConfirmation) {
-    return response.status(400).json({ message: 'The passwords do not match' });
-  }
-
-  const user = usersRepository.create({ email, password });
-
-  return response.json(user);
 });
 
 usersRouter.get('/', (request, response) => {
