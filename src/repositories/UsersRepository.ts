@@ -1,30 +1,32 @@
+import { EntityRepository, Repository } from 'typeorm';
 import User from '../models/User';
 
 interface CreateUserDTO {
+  userName: string;
   email: string;
   password: string;
 }
-class UsersRepository {
-  private users: User[];
-
-  constructor() {
-    this.users = [];
-  }
-
-  public all(): User[] {
-    return this.users;
-  }
-
-  public findByEmail(email: string): User | null {
-    const findUserWithSameEmail = this.users.find(user => user.email === email);
+@EntityRepository(User)
+class UsersRepository extends Repository<User> {
+  public async findByEmail(email: string): Promise<User | null> {
+    const findUserWithSameEmail = await this.findOne({
+      where: { email },
+    });
 
     return findUserWithSameEmail || null;
   }
 
-  public create({ email, password }: CreateUserDTO): User {
-    const user = new User({ email, password });
+  public async createUser({
+    email,
+    password,
+  }: Omit<CreateUserDTO, 'userName'>): Promise<User> {
+    const user = await this.create({
+      userName: email.slice(0, email.lastIndexOf('@')),
+      email,
+      password,
+    });
 
-    this.users.push(user);
+    await this.save(user);
 
     return user;
   }

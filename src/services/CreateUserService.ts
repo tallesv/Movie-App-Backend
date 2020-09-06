@@ -1,31 +1,24 @@
+import { getCustomRepository } from 'typeorm';
 import User from '../models/User';
 import UsersRepository from '../repositories/UsersRepository';
 
 interface Request {
   email: string;
   password: string;
-  passwordConfirmation: string;
 }
 
 class CreateUserService {
-  private usersRepository: UsersRepository;
-
-  constructor(usersRepository: UsersRepository) {
-    this.usersRepository = usersRepository;
-  }
-
-  public execute({ email, password, passwordConfirmation }: Request): User {
-    const findUserWithSameEmail = this.usersRepository.findByEmail(email);
+  public async execute({ email, password }: Request): Promise<User> {
+    const usersRepository = getCustomRepository(UsersRepository);
+    const findUserWithSameEmail = await usersRepository.findOne({
+      where: { email },
+    });
 
     if (findUserWithSameEmail) {
       throw Error('This email already exists');
     }
 
-    if (password !== passwordConfirmation) {
-      throw Error('The passwords do not match');
-    }
-
-    const user = this.usersRepository.create({ email, password });
+    const user = usersRepository.createUser({ email, password });
 
     return user;
   }
